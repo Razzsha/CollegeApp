@@ -17,6 +17,6 @@
                 Email = "student1@email.com",
                 Address = "Npj, Nepal"
             },
-        }; 
+        };
     }
 }
