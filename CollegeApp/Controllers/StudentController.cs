@@ -12,10 +12,11 @@ namespace CollegeApp.Controllers
     [ApiController]
     public class StudentController : ControllerBase
     {
-        private readonly IMyLogger _myLogger;
-        public StudentController(IMyLogger myLogger)
+       private readonly ILogger<StudentController> _logger;
+
+        public StudentController(ILogger<StudentController> logger)
         {
-            _myLogger = myLogger;
+         _logger = logger;       
         }
 
         [HttpGet]
@@ -24,15 +25,17 @@ namespace CollegeApp.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<IEnumerable<StudentDTO>> GetStudent()
         {
+            _logger.LogInformation("Fetching all students");
 
-            var students = CollegeRepo.Students.Select(s => new StudentDTO()
+            var students = CollegeRepo.Students.Select(s => new StudentDTO
             {
                 id = s.id,
                 StudentName = s.StudentName,
                 Email = s.Email,
                 Address = s.Address
             });
-            return Ok(CollegeRepo.Students);
+
+            return Ok(students);
         }
 
         [HttpGet("{id:int}", Name = "GetStudentById")]
@@ -43,13 +46,21 @@ namespace CollegeApp.Controllers
         public ActionResult<StudentDTO> GetStudentById(int id)
         {
             if (id <= 0)
+            {
+                _logger.LogWarning("Bad Request");
                 return BadRequest("Invalid student id");
+            }
+                
 
             var student = CollegeRepo.Students
                                       .FirstOrDefault(n => n.id == id);
 
             if (student == null)
+            {
+                _logger.LogError("Student not found with this Id");
                 return NotFound($"The student with id {id} not found");
+            }
+               
 
             var studentDTO = new StudentDTO()
             {
@@ -73,7 +84,11 @@ namespace CollegeApp.Controllers
                                       .FirstOrDefault(n => n.StudentName == name);
 
             if (student == null)
+            {
+                _logger.LogError("Student not found with this name");
                 return NotFound($"Student with name {name} not found");
+            }
+               
 
             var studentDTO = new StudentDTO
             {
@@ -95,7 +110,11 @@ namespace CollegeApp.Controllers
         public ActionResult<StudentDTO> CreateStudent([FromBody] StudentDTO model)
         {
             if (model == null)
+            {
+                _logger.LogWarning("Bad Request");
                 return BadRequest();
+            }
+                
             int newId = CollegeRepo.Students.LastOrDefault().id + 1;
             Student student = new Student
             {
@@ -117,12 +136,20 @@ namespace CollegeApp.Controllers
         public ActionResult UpdateStudent([FromBody] StudentDTO model)
         {
             if (model == null || model.id <= 0)
+            {
+                _logger.LogWarning("Bad Request");
                 return BadRequest("Invalid student data");
+            }
+                
 
             var existingStudent = CollegeRepo.Students.FirstOrDefault(s => s.id == model.id);
 
             if (existingStudent == null)
+            {
+                _logger.LogError("Student not found with this Id");
                 return NotFound();
+            }
+               
 
             existingStudent.StudentName = model.StudentName;
             existingStudent.Email = model.Email;
@@ -139,12 +166,19 @@ namespace CollegeApp.Controllers
         public ActionResult UpdateStudentPartial(int id, [FromBody] JsonPatchDocument<StudentDTO> patchDocument)
         {
             if (patchDocument == null || id <= 0)
+            {
+                _logger.LogWarning("Bad Request");
                 return BadRequest("Invalid student data");
+            }
+                
 
             var existingStudent = CollegeRepo.Students.FirstOrDefault(s => s.id == id);
 
             if (existingStudent == null)
+            {
+                _logger.LogError("Student not found with this Id");
                 return NotFound();
+            }
 
             var studentDTO = new StudentDTO
             {
@@ -177,8 +211,11 @@ namespace CollegeApp.Controllers
                                       .FirstOrDefault(n => n.id == id);
 
             if (student == null)
+            {
+                _logger.LogError("Student not found with this Id");
                 return NotFound($"Student with id {id} not found");
-
+            }
+                
             CollegeRepo.Students.Remove(student);
             return Ok("Student deleted successfully");
         }
