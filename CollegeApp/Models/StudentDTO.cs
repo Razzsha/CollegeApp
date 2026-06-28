@@ -9,8 +9,8 @@ namespace CollegeApp.Models
         [ValidateNever]
         public int id { get; set; }
 
-        [Required (ErrorMessage = "Student name is required")]
-        [StringLength(30)]
+        //[Required (ErrorMessage = "Student name is required")]
+        //[StringLength(30)]
 
         public string StudentName { get; set; }
 
