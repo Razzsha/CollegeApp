@@ -7,21 +7,24 @@ namespace CollegeApp.Controllers
     [ApiController]
     public class DemoController : ControllerBase
     {
-        //1. Strongly coupled/tightly coupled
-        //2. Loosely coupled
 
-        private  readonly IMyLogger _myLogger;
+        private  readonly ILogger<DemoController> _logger;
 
-        public DemoController(IMyLogger myLogger)
-        {
-            _myLogger =  myLogger;
+        public DemoController(ILogger<DemoController> logger)
+        { 
+            _logger =  logger;
         }
 
         [HttpGet]
         public ActionResult Index()
         {
-            _myLogger.Log("This is a log message from DemoController.");
-            
+            _logger.LogTrace("Log message from trace method");
+            _logger.LogDebug("Log message from Debug method");
+            _logger.LogInformation("Log message Information trace method");
+            _logger.LogWarning("Log message from Warning method");
+            _logger.LogError("Log message from Eroor method");
+            _logger.LogCritical("Log message from Critical method");
+
             return Ok("Log message sent.");
         }
     }
