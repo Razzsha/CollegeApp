@@ -3,6 +3,7 @@ using CollegeApp.MyLoggin;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using CollegeApp.Data;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,10 +14,12 @@ namespace CollegeApp.Controllers
     public class StudentController : ControllerBase
     {
        private readonly ILogger<StudentController> _logger;
+        private readonly CollegeDBContext _dbContext;
 
-        public StudentController(ILogger<StudentController> logger)
+        public StudentController(ILogger<StudentController> logger, CollegeDBContext dbContext)
         {
-         _logger = logger;       
+         _logger = logger;    
+            _dbContext = dbContext;
         }
 
         [HttpGet]
@@ -27,12 +30,13 @@ namespace CollegeApp.Controllers
         {
             _logger.LogInformation("Fetching all students");
 
-            var students = CollegeRepo.Students.Select(s => new StudentDTO
+            var students = _dbContext.Students.Select(s => new StudentDTO
             {
-                id = s.id,
+                id = s.Id,
                 StudentName = s.StudentName,
                 Email = s.Email,
-                Address = s.Address
+                Address = s.Address,
+                DOB = s.DOB
             });
 
             return Ok(students);
@@ -52,8 +56,8 @@ namespace CollegeApp.Controllers
             }
                 
 
-            var student = CollegeRepo.Students
-                                      .FirstOrDefault(n => n.id == id);
+            var student = _dbContext.Students
+                                      .FirstOrDefault(n => n.Id == id);
 
             if (student == null)
             {
@@ -64,7 +68,7 @@ namespace CollegeApp.Controllers
 
             var studentDTO = new StudentDTO()
             {
-                id = student.id,
+                id = student.Id,
                 StudentName = student.StudentName,
                 Email = student.Email,
                 Address = student.Address
@@ -80,7 +84,7 @@ namespace CollegeApp.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<StudentDTO> GetStudentByName(string name)
         {
-            var student = CollegeRepo.Students
+            var student = _dbContext.Students
                                       .FirstOrDefault(n => n.StudentName == name);
 
             if (student == null)
@@ -92,7 +96,7 @@ namespace CollegeApp.Controllers
 
             var studentDTO = new StudentDTO
             {
-                id = student.id,
+                id = student.Id,
                 StudentName = student.StudentName,
                 Email = student.Email,
                 Address = student.Address
@@ -115,16 +119,15 @@ namespace CollegeApp.Controllers
                 return BadRequest();
             }
                 
-            int newId = CollegeRepo.Students.LastOrDefault().id + 1;
             Student student = new Student
             {
-                id = newId,
                 StudentName = model.StudentName,
                 Email = model.Email,
                 Address = model.Address
             };
-            CollegeRepo.Students.Add(student);
-            model.id = student.id;
+            _dbContext.Students.Add(student);
+            _dbContext.SaveChanges();
+            model.id = student.Id;
             return CreatedAtRoute("GetStudentById", new { id = model.id }, model);
         }
 
@@ -142,7 +145,7 @@ namespace CollegeApp.Controllers
             }
                 
 
-            var existingStudent = CollegeRepo.Students.FirstOrDefault(s => s.id == model.id);
+            var existingStudent = _dbContext.Students.FirstOrDefault(s => s.Id == model.id);
 
             if (existingStudent == null)
             {
@@ -154,6 +157,7 @@ namespace CollegeApp.Controllers
             existingStudent.StudentName = model.StudentName;
             existingStudent.Email = model.Email;
             existingStudent.Address = model.Address;
+            _dbContext.SaveChanges();
 
             return NoContent();
         }
@@ -172,7 +176,7 @@ namespace CollegeApp.Controllers
             }
                 
 
-            var existingStudent = CollegeRepo.Students.FirstOrDefault(s => s.id == id);
+            var existingStudent = _dbContext.Students.FirstOrDefault(s => s.Id == id);
 
             if (existingStudent == null)
             {
@@ -182,7 +186,7 @@ namespace CollegeApp.Controllers
 
             var studentDTO = new StudentDTO
             {
-                id = existingStudent.id,
+                id = existingStudent.Id,
                 StudentName = existingStudent.StudentName,
                 Email = existingStudent.Email,
                 Address = existingStudent.Address
@@ -196,6 +200,7 @@ namespace CollegeApp.Controllers
             existingStudent.StudentName = studentDTO.StudentName;
             existingStudent.Email = studentDTO.Email;
             existingStudent.Address = studentDTO.Address;
+            _dbContext.SaveChanges();
 
             return NoContent();
         }
@@ -207,8 +212,8 @@ namespace CollegeApp.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult DeleteStudent(int id)
         {
-            var student = CollegeRepo.Students
-                                      .FirstOrDefault(n => n.id == id);
+            var student = _dbContext.Students
+                                      .FirstOrDefault(n => n.Id == id);
 
             if (student == null)
             {
@@ -216,7 +221,7 @@ namespace CollegeApp.Controllers
                 return NotFound($"Student with id {id} not found");
             }
                 
-            CollegeRepo.Students.Remove(student);
+            _dbContext.Students.Remove(student);
             return Ok("Student deleted successfully");
         }
     }

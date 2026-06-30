@@ -22,8 +22,8 @@ namespace CollegeApp.Models
         [Required]
 
         public string Address { get; set; }
-        [DateCheck]
-        public DateTime AddmissionDate { get; set;}
+        //[DateCheck]
+        public DateTime DOB { get; set;}
 
         public string Password { get; set; }
         [Compare(nameof(Password))]

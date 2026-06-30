@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CollegeApp.Data.Config;
+using Microsoft.EntityFrameworkCore;
 
 namespace CollegeApp.Data
 {
@@ -9,6 +10,10 @@ namespace CollegeApp.Data
         {
             
         }
-        DbSet<Student> Students { get; set; }       
+       public DbSet<Student> Students { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new StudentConfig());
+        }
     }
 }
