@@ -1,8 +1,35 @@
+using CollegeApp.Data;
 using CollegeApp.MyLoggin;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Logging.ClearProviders();
+
+builder.Logging.AddLog4Net();
+
+#region Serilog Settings
+//Log.Logger = new LoggerConfiguration().
+//    MinimumLevel.Information()
+//    .WriteTo.File("Log/log.txt", rollingInterval: RollingInterval.Minute)
+//    .CreateLogger();
+
+// use this to override the built-in loggers
+//builder.Services.AddSerilog();
+
+//use serilog along with built-in loggers
+//builder.Logging.AddSerilog();
+
+//builder.Logging.ClearProviders();
+//builder.Logging.AddConsole();
+//builder.Logging.AddDebug();
+#endregion
+
+builder.Services.AddDbContext<CollegeDBContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("CollegeAppConnection"));
+});
 
 builder.Services.AddControllers(options =>
 {
